@@ -1,8 +1,27 @@
 <template>
 <v-container fluid>
-  <h4>Example: postgresql use : pg_dump -s databasename > file.sql</h4>
-  <h4>Example:  sql use mysqldump -u root -p --no-data dbname > schema.sql</h4>
-  <h5> Then use that file</h5>
+  <div v-if="noFile">
+    <h4>Example: postgresql use : pg_dump -s databasename > file.sql</h4>
+    <h4>Example:  sql use mysqldump -u root -p --no-data dbname > schema.sql</h4>
+    <h5> Then use that file</h5>
+    <v-btn @click="read()">Demo</v-btn>
+  </div>
+  <div v-else>
+    <v-chip v-for="(s,i) in selected"
+      col
+      wrap
+      :color="s === choice? 'amber lighten-2' : selected.indexOf(s) < selected.indexOf(choice) ? 'blue' : 'green'"
+      :key="i">{{s}}</v-chip>
+    <v-flex align-content-start>
+      <h1>click align table</h1>
+      <v-switch label="child"
+        v-model="child"></v-switch>
+      <v-switch label="parent"
+        color="green"
+        v-model="parent"></v-switch>
+    </v-flex>
+  </div>
+
   <input type="file"
     multiple
     @change='read' />
@@ -25,6 +44,10 @@
 
 <script>
 import Table from './Table';
+import demoColors from '../assets/demoColors';
+import demoRef from '../assets/demoRef';
+import demoTable from '../assets/demoTable';
+
 export default {
   name: 'HelloWorld',
   components: {
@@ -32,7 +55,12 @@ export default {
   },
   data() {
     return {
+      noFile: true,
       msg: 'Welcome to Your Vue.js App',
+      child: true,
+      choice: '',
+      parent: true,
+      selected: [],
       allTables: {},
       tables: {},
       tableNames: [],
@@ -42,6 +70,16 @@ export default {
     }
   },
   computed: {},
+  watch: {
+    child: function() {
+      if (this.choice)
+        this.doTheThing(this.choice, 'from');
+    },
+    parent: function() {
+      if (this.choice)
+        this.doTheThing(this.choice, 'from');
+    }
+  },
   methods: {
     colorGen: function() {
       let color = []
@@ -95,6 +133,16 @@ export default {
     },
     // ******** ********  Read  ******** ********
     read(data) {
+      if (!data) {
+        this.allTables = demoTable;
+        this.tables = demoTable;
+        this.colors = demoColors;
+        this.references = demoRef;
+        this.noFile = false;
+        return;
+      }
+      // line below from ifnot https://github.com/vuejs/vue/issues/702
+      Object.assign(this.$data, this.$options.data.apply(this))
       let files = data.target.files;
       for (let i = 0, file; file = files[i]; i++) {
         let reader = new FileReader();
@@ -104,18 +152,30 @@ export default {
         };
         reader.readAsText(file);
       }
+      this.noFile = false;
     },
-    doTheThing(mainKey) {
-      if (Object.keys(this.tables).length !== Object.keys(this.allTables).length) {
+    // ******** ********  Filter by click  ******** ********
+    doTheThing(mainKey, from) {
+      if (!mainKey || mainKey == '') {
+        return;
+      }
+      this.choice = mainKey;
+      this.selected = [];
+      if (!from && Object.keys(this.tables).length !== Object.keys(this.allTables).length) {
+        this.choice = '';
         this.tables = this.allTables;
       } else {
-        let x = [mainKey];
+        this.selected.push(mainKey);
         this.references.forEach(e => {
-          if (e.tableName == mainKey)
-            x.push(e.ref);
+          if (this.parent && e.tableName == mainKey) {
+            this.selected.push(e.ref);
+          }
+          if (this.child && e.ref == mainKey) {
+            this.selected.unshift(e.tableName);
+          }
         })
         this.tables = Object.keys(this.allTables)
-          .filter(k => x.includes(k))
+          .filter(k => this.selected.includes(k))
           .reduce((obj, key) => {
             obj[key] = this.allTables[key];
             return obj;
@@ -129,41 +189,44 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.list {
+  backface-visibility: hidden;
+  z-index: 1;
+}
+
+/* moving */
+
+.list-move {
+  transition: all 800ms ease-in-out 50ms;
+}
+
+/* appearing */
+
+.list-enter-active {
+  transition: all 800ms ease-out;
+}
+
+/* disappearing */
+
+.list-leave-active {
+  transition: all 800ms ease-in;
+  /* position: absolute; */
+  /* z-index: 0; */
+}
+
+/* appear at / disappear to */
+
+.list-enter,
+.list-leave-to {
+  opacity: 0;
+}
+
+
 .rs-flex {
   display: flex;
   flex-wrap: wrap;
   width: 100%;
   justify-content: space-around;
-  align-items: center;
+  /* align-items: center; */
 }
 </style>
-
-/*
-createTableIfNotExists\((.[^,]*)|{\}
-
-createTableIfNotExists\((.[^,]*),.[^\{]*{(.[^\}]*)
-
-createTableIfNotExists\((.[^,]*),.[^\{]*{.[^.]*(.[^\}|.]*)
-
-
-createTableIfNotExists\((.[^,]*),.[^\(]*\((.[^\)]*)\).[^\{]*\{(.[^\}]*)\}
-
-
-createTable.[^\(]+\((.[^,]*),.[^\(]*\(.[^\{]*\{
-
-
---------------
-
-createTable.[^\(]+\((.[^,]*),.[^\(]*\(.[^\{]*\{(.[^\}]*)\}
-
-(?=increments|string|boolean|timestamp).[^\(]*\(['|"](\w+)['|"], *(\d*)
--------------
-/(?=(increments|string|boolean|timestamp)\(['|"](\w+))/g
-
-sql
-
-FOREIGN KEY \([`]?(\w+)[`]?\) REFERENCES (.[^(]+)
-
-
-
-*/

@@ -1,7 +1,5 @@
   <template>
-		<div 	@click="wesh(tKey)"
->
-
+		<v-flex	@click="emitToggle(tKey)">
 	<v-card class="drawing" flat
 	:style="{borderTop: '6px solid', borderRadius: '20px 36px 10px 10px', borderColor: color, boxShadow: '0 4px 6px 0 hsla(0, 0%, 0%, 0.2)'}" >
 		<v-card-title primary-title><h1>{{tKey}}</h1></v-card-title>
@@ -13,7 +11,7 @@
 		</v-flex>
 		<v-card-text></v-card-text>
 	</v-card>
-</div>
+</v-flex>
 </template>
 
 <script>
@@ -26,8 +24,7 @@ export default {
   },
   computed: {},
   methods: {
-    wesh(tkey) {
-      console.log('wesh called');
+    emitToggle(tkey) {
       this.$emit('toggle', tkey);
     }
   },
