@@ -3,22 +3,25 @@
   <h4>Example: postgresql use : pg_dump -s databasename > file.sql</h4>
   <h4>Example:  sql use mysqldump -u root -p --no-data dbname > schema.sql</h4>
   <h5> Then use that file</h5>
+  <div v-for="t in tableNames">
+    {{t}}
+  </div>
   <input type="file"
     multiple
     @change='read' />
   <v-layout wrap
     v-model="tables">
-    <transition-group name="list"
-      class="rs-flex">
-      <v-flex v-for="(value, key) in tables"
-        :key='key'>
-        <Table :tKey="key"
-          @toggle="doTheThing"
-          :color="colors[key]"
-          :colors="colors"
-          :tValue="value"> </Table>
-      </v-flex>
-    </transition-group>
+    <!-- <transition-group name="list" -->
+    <!-- class="rs-flex"> -->
+    <v-flex v-for="(value, key) in tables"
+      :key='key'>
+      <Table :tKey="key"
+        @toggle="doTheThing"
+        :color="colors[key]"
+        :colors="colors"
+        :tValue="value"> </Table>
+    </v-flex>
+    <!-- </transition-group> -->
   </v-layout>
 </v-container>
 </template>
@@ -58,18 +61,19 @@ export default {
       const regex = /CREATE TABLE `?(\w+)`? ?∆(.[^Ω]*)Ω/g;
       const subRegex = /CONSTRAINT `?(\w+)`? FOREIGN KEY \([`]?(\w+)[`]?\) REFERENCES (.[^(]+)/g;
       let m, n;
+      let i = 1;
       while ((m = regex.exec(str)) !== null) {
         if (m.index === regex.lastIndex) {
           regex.lastIndex++;
         }
         let content = m[2].split(',').map(e => e.trim()).filter(e => !(e.startsWith('CONSTRAINT') || e.startsWith('KEY') || e.startsWith('PRIMARY')));
         let realContent = {};
-        content.map(e => {
+        content.map((e, i) => {
           let x = e.split(' ');
           realContent[[x[0].replace(/`| /g, '')]] = x[1] + (x[1] == 'character' ?
             ' ' + x[2].split('(')[1].split(')')[0] : '');
         })
-        this.tableNames.push(m[1]);
+        this.tableNames.push([m[1], i++]);
         this.$set(this.tables, m[1], realContent);
         this.$set(this.colors, m[1], this.colorGen())
       }
