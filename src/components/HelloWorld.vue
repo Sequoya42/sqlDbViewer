@@ -114,7 +114,6 @@ export default {
           if (e.tableName == mainKey)
             x.push(e.ref);
         })
-        console.log('x', x);
         this.tables = Object.keys(this.allTables)
           .filter(k => x.includes(k))
           .reduce((obj, key) => {
