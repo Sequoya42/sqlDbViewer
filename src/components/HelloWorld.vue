@@ -13,6 +13,7 @@
       <v-flex v-for="(value, key) in tables"
         :key='key'>
         <Table :tKey="key"
+          @toggle="doTheThing"
           :color="colors[key]"
           :colors="colors"
           :tValue="value"> </Table>
@@ -32,8 +33,10 @@ export default {
   data() {
     return {
       msg: 'Welcome to Your Vue.js App',
+      allTables: {},
       tables: {},
-      references: {},
+      tableNames: [],
+      references: [],
       colors: {},
       text: []
     }
@@ -53,28 +56,41 @@ export default {
     parseKnex(str) {
       //TODO : better regex, also for .sql type
       const regex = /CREATE TABLE `?(\w+)`? ?∆(.[^Ω]*)Ω/g;
-      const subRegex = /FOREIGN KEY \([`]?(\w+)[`]?\) REFERENCES (.[^(]+)/g;
+      const subRegex = /CONSTRAINT `?(\w+)`? FOREIGN KEY \([`]?(\w+)[`]?\) REFERENCES (.[^(]+)/g;
       let m, n;
       while ((m = regex.exec(str)) !== null) {
         if (m.index === regex.lastIndex) {
           regex.lastIndex++;
         }
-        let z = m[2].split(',').map(e => e.trim()).filter(e => !(e.startsWith('CONSTRAINT') || e.startsWith('KEY') || e.startsWith('PRIMARY')));
-        let zz = {};
-        z.map(e => {
+        let content = m[2].split(',').map(e => e.trim()).filter(e => !(e.startsWith('CONSTRAINT') || e.startsWith('KEY') || e.startsWith('PRIMARY')));
+        let realContent = {};
+        content.map(e => {
           let x = e.split(' ');
-          zz[[x[0]]] = x[1];
+          realContent[[x[0].replace(/`| /g, '')]] = x[1] + (x[1] == 'character' ?
+            ' ' + x[2].split('(')[1].split(')')[0] : '');
         })
-        this.$set(this.tables, m[1], zz);
+        this.tableNames.push(m[1]);
+        this.$set(this.tables, m[1], realContent);
         this.$set(this.colors, m[1], this.colorGen())
       }
       while ((n = subRegex.exec(str)) !== null) {
         if (n.index === subRegex.lastIndex) {
           subRegex.lastIndex++;
         }
-        this.references[[n[2]]] = n[1];
+        let tableName = n[1].replace(/_\w[^_]+_id_foreign/, '');
+        let ref = n[3].replace(/`| /g, '');
+        this.references.push({
+          tableName,
+          ref,
+          val: n[2]
+        })
+        if (tableName in this.tables) {
+          this.tables[tableName][
+            [n[2]]
+          ] = ref
+        }
       }
-
+      this.allTables = Object.assign({}, this.tables);
     },
     // ******** ********  Read  ******** ********
     read(data) {
@@ -87,9 +103,27 @@ export default {
         };
         reader.readAsText(file);
       }
-      console.log('text', this.text)
+    },
+    doTheThing(mainKey) {
+      if (Object.keys(this.tables).length !== Object.keys(this.allTables).length) {
+        this.tables = this.allTables;
+      } else {
+        let x = [mainKey];
+        this.references.forEach(e => {
+          if (e.tableName == mainKey)
+            x.push(e.ref);
+        })
+        console.log('x', x);
+        this.tables = Object.keys(this.allTables)
+          .filter(k => x.includes(k))
+          .reduce((obj, key) => {
+            obj[key] = this.allTables[key];
+            return obj;
+          }, {})
+      }
     }
-  }
+  },
+
 }
 </script>
 

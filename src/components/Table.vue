@@ -1,15 +1,19 @@
   <template>
-	<v-card class="drawing"
-	:style="{borderTop: '6px solid', borderColor: color}" >
+		<div 	@click="wesh(tKey)"
+>
+
+	<v-card class="drawing" flat
+	:style="{borderTop: '6px solid', borderRadius: '20px 36px 10px 10px', borderColor: color, boxShadow: '0 4px 6px 0 hsla(0, 0%, 0%, 0.2)'}" >
 		<v-card-title primary-title><h1>{{tKey}}</h1></v-card-title>
 		<v-flex v-for="(v,k) in tValue"
 			:key="k">
 			<v-card-text>
-				<h5>{{k}}</h5> <span :style="{color: v == 'foreign' ? 'red' : 'hsl(249,9%,80%)'}">{{v}}</span>
+				<h2 :style="{color: v in colors ? colors[v]: 'grey'}" >{{k}}</h2> <h3 :style="{color: v in colors ? colors[v] : 'hsl(249,9%,80%)'}">{{v}}</h3>
  </v-card-text>
 		</v-flex>
 		<v-card-text></v-card-text>
 	</v-card>
+</div>
 </template>
 
 <script>
@@ -22,17 +26,10 @@ export default {
   },
   computed: {},
   methods: {
-    colorGen: function() {
-      let color = []
-      color[0] = Math.random() * Math.floor(360);
-      color[1] = `${Math.random() * Math.floor(80) + 20}%`;
-      color[2] = `${Math.random() * Math.floor(80) }%`;
-      // let color = "#" + ((1 << 24) * Math.random() | 0).toString(16)
-      return {
-        borderTop: "5px solid",
-        borderColor: `hsl(${color[0]}, ${color[1]}, ${color[2]})`
-      }
-    },
+    wesh(tkey) {
+      console.log('wesh called');
+      this.$emit('toggle', tkey);
+    }
   },
   components: {},
 }
