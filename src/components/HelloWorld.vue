@@ -1,49 +1,70 @@
 <template>
 <v-container fluid>
+  <v-layout style="padding-bottom:5vh"
+    align-center
+    justify-center
+    align-content-center>
+    <input type="file"
+      @change='read' />
+    <v-btn v-if="noFile"
+      @click="read()">Demo</v-btn>
+  </v-layout>
   <div v-if="noFile">
-    <h4>Example: postgresql use : pg_dump -s databasename > file.sql</h4>
-    <h4>Example:  sql use mysqldump -u root -p --no-data dbname > schema.sql</h4>
+    <h4>Postgres: <code> pg_dump -s databasename > file.sql	</code> </h4>
+    <h4>SQL: <code> mysqldump -u root -p --no-data dbname > schema.sql</code></h4>
     <h5> Then use that file</h5>
-    <v-btn @click="read()">Demo</v-btn>
   </div>
   <div v-else>
+    <v-switch v-model="toggleInfo"
+      label="show and hide info"></v-switch>
+    <v-btn fab
+      color="teal"
+      fixed
+      bottom
+      left
+      @click="showAll">
+      All
+    </v-btn>
+    <p class="subheading">
+      Click on a table and see what happens
+    </p>
+    <p class="caption">
+      Use cmd/ctrl <b><i>+  -   0</i></b> to zoom/dezoom/orginal size
+    </p>
     <v-chip v-for="(s,i) in selected"
       col
       wrap
       :color="s === choice? 'amber lighten-2' : selected.indexOf(s) < selected.indexOf(choice) ? 'blue' : 'green'"
       :key="i">{{s}}</v-chip>
-    <v-flex align-content-start>
-      <h1>click align table</h1>
-      <v-switch label="child"
-        v-model="child"></v-switch>
-      <v-switch label="parent"
-        color="green"
-        v-model="parent"></v-switch>
-    </v-flex>
+    <SideMenu @toggleFilter="doTheThingFromChild"
+      @toggle="doTheThing"
+      :child="child"
+      :parent="parent"
+      :tables="Object.keys(tables).sort()"></SideMenu>
+    <v-content>
+      <v-layout wrap
+        v-model="tables">
+        <transition-group name="list"
+          class="rs-flex">
+          <v-flex v-for="(value, key) in tables"
+            :key='key'>
+            <Table :tKey="key"
+              @toggle="doTheThing"
+              :toggleInfo="toggleInfo"
+              :color="colors[key]"
+              :colors="colors"
+              :tValue="value"> </Table>
+          </v-flex>
+        </transition-group>
+      </v-layout>
+    </v-content>
   </div>
-
-  <input type="file"
-    multiple
-    @change='read' />
-  <v-layout wrap
-    v-model="tables">
-    <transition-group name="list"
-      class="rs-flex">
-      <v-flex v-for="(value, key) in tables"
-        :key='key'>
-        <Table :tKey="key"
-          @toggle="doTheThing"
-          :color="colors[key]"
-          :colors="colors"
-          :tValue="value"> </Table>
-      </v-flex>
-    </transition-group>
-  </v-layout>
 </v-container>
 </template>
 
 <script>
 import Table from './Table';
+import SideMenu from './SideMenu';
 import demoColors from '../assets/demoColors';
 import demoRef from '../assets/demoRef';
 import demoTable from '../assets/demoTable';
@@ -51,13 +72,15 @@ import demoTable from '../assets/demoTable';
 export default {
   name: 'HelloWorld',
   components: {
-    Table
+    Table,
+    SideMenu,
   },
   data() {
     return {
       noFile: true,
       msg: 'Welcome to Your Vue.js App',
       child: true,
+      toggleInfo: true,
       choice: '',
       parent: true,
       selected: [],
@@ -70,16 +93,7 @@ export default {
     }
   },
   computed: {},
-  watch: {
-    child: function() {
-      if (this.choice)
-        this.doTheThing(this.choice, 'from');
-    },
-    parent: function() {
-      if (this.choice)
-        this.doTheThing(this.choice, 'from');
-    }
-  },
+
   methods: {
     colorGen: function() {
       let color = []
@@ -154,33 +168,41 @@ export default {
       }
       this.noFile = false;
     },
+    // ******** ********  showAll  ******** ********
+    showAll() {
+      this.tables = this.allTables;
+    },
+    // ******** ********  From child  ******** ********
+    doTheThingFromChild(name) {
+      if (name == 'child')
+        this.child = !this.child;
+      else if (name == 'parent')
+        this.parent = !this.parent;
+      this.doTheThing(this.choice, 'from')
+    },
     // ******** ********  Filter by click  ******** ********
     doTheThing(mainKey, from) {
+      console.log('doTheThing', mainKey, from);
       if (!mainKey || mainKey == '') {
         return;
       }
       this.choice = mainKey;
       this.selected = [];
-      if (!from && Object.keys(this.tables).length !== Object.keys(this.allTables).length) {
-        this.choice = '';
-        this.tables = this.allTables;
-      } else {
-        this.selected.push(mainKey);
-        this.references.forEach(e => {
-          if (this.parent && e.tableName == mainKey) {
-            this.selected.push(e.ref);
-          }
-          if (this.child && e.ref == mainKey) {
-            this.selected.unshift(e.tableName);
-          }
-        })
-        this.tables = Object.keys(this.allTables)
-          .filter(k => this.selected.includes(k))
-          .reduce((obj, key) => {
-            obj[key] = this.allTables[key];
-            return obj;
-          }, {})
-      }
+      this.selected.push(mainKey);
+      this.references.forEach(e => {
+        if (this.parent && e.tableName == mainKey) {
+          this.selected.push(e.ref);
+        }
+        if (this.child && e.ref == mainKey) {
+          this.selected.unshift(e.tableName);
+        }
+      })
+      this.tables = Object.keys(this.allTables)
+        .filter(k => this.selected.includes(k))
+        .reduce((obj, key) => {
+          obj[key] = this.allTables[key];
+          return obj;
+        }, {})
     }
   },
 
@@ -197,19 +219,22 @@ export default {
 /* moving */
 
 .list-move {
-  transition: all 800ms ease-in-out 50ms;
+  transition: all 800ms cubic-bezier(.25, .8, .25, 1);
+  /* transition: all 800ms ease-in-out 50ms; */
 }
 
 /* appearing */
 
 .list-enter-active {
-  transition: all 800ms ease-out;
+  transition: all 800ms cubic-bezier(.25, .8, .25, 1);
+  /* transition: all 800ms ease-out; */
 }
 
 /* disappearing */
 
 .list-leave-active {
-  transition: all 800ms ease-in;
+  transition: all 800ms cubic-bezier(.25, .8, .25, 1);
+  /* transition: all 800ms ease-in; */
   /* position: absolute; */
   /* z-index: 0; */
 }
