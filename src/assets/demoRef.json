@@ -1,4 +1,16 @@
 [{
+  "tableName": "companies",
+  "ref": "users",
+  "val": "user_id"
+}, {
+  "tableName": "company_members",
+  "ref": "companies",
+  "val": "company_id"
+}, {
+  "tableName": "company_members",
+  "ref": "users",
+  "val": "user_id"
+}, {
   "tableName": "profiles",
   "ref": "users",
   "val": "user_id"
@@ -10,6 +22,10 @@
   "tableName": "project_members",
   "ref": "users",
   "val": "user_id"
+}, {
+  "tableName": "project_owner",
+  "ref": "companies",
+  "val": "company_id"
 }, {
   "tableName": "project_owner",
   "ref": "projects",

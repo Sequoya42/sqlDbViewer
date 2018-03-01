@@ -1,4 +1,25 @@
 {
+  "account_validation": {
+    "id": "integer",
+    "token": "character 128",
+    "email": "character 128",
+    "mail_sent": "boolean",
+    "creation_date": "timestamp"
+  },
+  "companies": {
+    "id": "integer",
+    "user_id": "users",
+    "name": "character 128",
+    "creation_date": "timestamp",
+    "updated_at": "timestamp"
+  },
+  "company_members": {
+    "id": "integer",
+    "company_id": "companies",
+    "user_id": "users",
+    "creation_date": "timestamp",
+    "updated_at": "timestamp"
+  },
   "profiles": {
     "id": "integer",
     "user_id": "users",

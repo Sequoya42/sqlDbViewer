@@ -1,12 +1,12 @@
   <template>
 		<v-flex	@click="emitToggle(tKey)">
 	<v-card class="drawing" flat
-	:style="{ borderTop: '14px solid',  borderRadius: '8px', borderColor: color, boxShadow: `0 4px 6px 0 hsla(0, 0%, 0%, 0.2)`}" >
-		<v-card-title primary-title><h1>{{tKey}}</h1></v-card-title>
+	:style="{ borderColor: color}" >
+		<v-card-title primary-title><h2>{{tKey}}</h2></v-card-title>
 		<v-flex v-if="toggleInfo" v-for="(v,k) in tValue"
 			:key="k">
-			<v-card-text>
-				<h2 :style="{color: v in colors ? colors[v]: 'grey'}" >{{k}}</h2> <h3 :style="{color: v in colors ? colors[v] : 'hsl(249,9%,80%)'}">{{v}}</h3>
+			<v-card-text class="caption">
+				<h3 :style="{color: v in colors ? colors[v]: 'grey'}" >{{k}}</h3> <h4 :style="{color: v in colors ? colors[v] : 'hsl(249,9%,80%)'}">{{v}}</h4>
  </v-card-text>
 		</v-flex>
 		<v-card-text></v-card-text>
@@ -36,5 +36,8 @@ export default {
 .drawing {
   margin: 2vh;
   padding: 2vh;
+  border-top: 14px solid;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px 0 hsla(0, 0%, 0%, 0.2);
 }
 </style>

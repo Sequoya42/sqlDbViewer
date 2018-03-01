@@ -1,0 +1,41 @@
+.list {
+  backface-visibility: hidden;
+  z-index: 1;
+}
+
+/* moving */
+
+.list-move {
+  transition: all 800ms cubic-bezier(.25, .8, .25, 1);
+  /* transition: all 800ms ease-in-out 50ms; */
+}
+
+/* appearing */
+
+.list-enter-active {
+  transition: all 800ms cubic-bezier(.25, .8, .25, 1);
+  /* transition: all 800ms ease-out; */
+}
+
+/* disappearing */
+
+.list-leave-active {
+  transition: all 800ms cubic-bezier(.25, .8, .25, 1);
+  /* transition: all 800ms ease-in; */
+  /* position: absolute; */
+  /* z-index: 0; */
+}
+
+/* appear at / disappear to */
+
+.list-enter, .list-leave-to {
+  opacity: 0;
+}
+
+.rs-flex {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  justify-content: space-around;
+  /* align-items: center; */
+}

@@ -1,7 +1,14 @@
-# knexviewer
+# Sql db viewer
 
-> A Vue.js project
+Online version available at [sqlDbViewer](https://sequoya42.github.io/sqlDbViewer/#/)
 
+ Simple Mysql and Postgres viewer
+ Ability to toggle `reference to` and `referred by`
+
+ Upload schema of database, or play with the demo
+
+ No vuex, quick and dirty
+ 
 ## Build Setup
 
 ``` bash

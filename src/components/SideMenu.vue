@@ -1,23 +1,27 @@
   <template>
 		<v-navigation-drawer app clipped
 		 fixed right
-		permanent
+		 permanent
 		hide-overlay
-		mini-variant.sync width="150">
-		<v-switch  label="Refered by"
-			v-model="theChild"></v-switch>
-		<v-switch label="Reference"
-			color="green"
-			v-model="theParent"></v-switch>
-<v-spacer><hr /></v-spacer>
-		<v-card v-for="(v,i) in tables" :key="i">
-			<v-card-title @click="emitToggle(v)" primary-title>{{v}}</v-card-title>
+		floating
+		class="pt-4">
+		<SpeedActions
+		:child="child"
+		:parent="parent"
+		@ShowAll="$emit('ShowAll')"
+		@toggleFilterChild="$emit('toggleFilter', 'child')"
+		@toggleFilterParent="$emit('toggleFilter', 'parent')"
+		@ToggleColor="$emit('ToggleColor')" />
+
+			<hr />
+		<v-card flat class="mt-1" v-for="(v,i) in tables" :key="i">
+			<v-card-title @click="emitToggle(v)" style="boxShadow: 0 2px 3px 0 hsla(0, 0%, 0%, 0.1)" primary-title class="subheader">{{v}}</v-card-title>
 		</v-card>
 		</v-navigation-drawer>
 </template>
 
 <script>
-// import { mapGetters, mapActions } from 'vuex';
+import SpeedActions from './SpeedActions';
 
 export default {
   name: 'SideMenu',
@@ -26,33 +30,20 @@ export default {
   data: function() {
     return {}
   },
-  computed: {
-    theChild: {
-      get() {
-        return this.child
-      },
-      set() {
-        console.log('from cjild');
-        this.$emit('toggleFilter', 'child')
-      }
-    },
-    theParent: {
-      get() {
-        return this.parent
-      },
-      set() {
-        this.$emit('toggleFilter', 'parent')
-      }
-    }
-  },
   methods: {
     emitToggle(tkey) {
       this.$emit('toggle', tkey);
     }
   },
-  components: {},
+  components: {
+    SpeedActions
+  },
 }
 </script>
 
 <style scoped>
+.test {
+  padding-top: 10px;
+  margin-top: 10px;
+}
 </style>
