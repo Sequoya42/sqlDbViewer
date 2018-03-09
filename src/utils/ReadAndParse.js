@@ -38,7 +38,7 @@ export default {
       if (n.index === subRegex.lastIndex) {
         subRegex.lastIndex++;
       }
-      let tableName = n[1].replace(/_\w[^_]+_id_foreign/, '');
+      let tableName = n[1].replace(/_\w[^_]+_id_(foreign|fkey)/, '');
       let ref = n[3].replace(/`| /g, '');
       this.references.push({
         tableName,

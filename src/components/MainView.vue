@@ -107,7 +107,6 @@ export default {
     },
     // ******** ********  From child  ******** ********
     doTheThingFromChild(name) {
-      console.log('name', name)
       if (name == 'child')
         this.child = !this.child;
       else if (name == 'parent')
@@ -116,7 +115,6 @@ export default {
     },
     // ******** ********  Filter by click  ******** ********
     doTheThing(mainKey, from) {
-      console.log('doTheThing', mainKey, from);
       if (!mainKey || mainKey == '') {
         return;
       }
