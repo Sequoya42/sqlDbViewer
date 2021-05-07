@@ -8,6 +8,7 @@ Online version available at [sqlDbViewer](https://sequoya42.github.io/sqlDbViewe
  Upload schema of database, or play with the demo
 
  No vuex, quick and dirty
+ (Ie: Proof of concept, works with PSQL)
  
 ## Build Setup
 
