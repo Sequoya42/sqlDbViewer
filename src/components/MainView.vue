@@ -103,6 +103,7 @@ export default {
 
     // ******** ********  showAll  ******** ********
     showAll() {
+      console.log("LALA", JSON.stringify(this.allTables, null, 2))
       this.tables = this.allTables;
     },
     // ******** ********  From child  ******** ********

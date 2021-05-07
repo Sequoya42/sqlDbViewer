@@ -2,9 +2,67 @@ import demoColors from '../assets/demoColors';
 import demoRef from '../assets/demoRef';
 import demoTable from '../assets/demoTable';
 
+function testRef(str) {
+  let i = 0;
+  let refs = [];
+  while (i < str.length) {
+    i = str.indexOf("ALTER TABLE");
+    if (i >= 0) {
+      str = str.substr(i + 12);
+    }else break;
+    i = str.indexOf("\n");
+    let tableName = str.slice(0, i);
+    if (tableName.includes("ONLY"))
+      tableName = tableName.split("ONLY")[1];
+    i = str.indexOf("FOREIGN KEY");
+    i = str.indexOf("(", i);
+    let val = str.slice(i + 1, str.indexOf(")"));
+    str = str.substr(i);
+    i = str.indexOf("REFERENCES");
+    let ref = str.slice(i + 10, str.indexOf("(", i));
+    // .replace("(", ".").replace(")", "");
+    // val = val.slice(val.indexOf("(") + 1,
+    //   val.indexOf(")"));
+    refs.push({
+      tableName:
+      tableName.trim(),
+      ref: ref.trim(),
+      val:val.trim()});
+  }
+  return refs;
+}
+
+
+function testStuff(str) {
+  let tables = {};
+  let i = 0;
+  while (i < str.length && i >= 0) {
+    i = str.indexOf("CREATE TABLE");
+    if (i >= 0){
+      str = str.substr(i + 12);
+    }else {
+      break;
+    }
+    i = str.indexOf("(");
+    const name = str.slice(0, i).trim();
+    let data = str.slice(i, str.indexOf(");"))
+      .split("\n")
+      .map(s => s.replace(/\r/g, "")
+        .replace(/,/g, "")
+        .trim()
+      )
+      .filter(e => e.length > 1);
+    if (!name.includes("knex"))
+      tables[name.trim()] = data.reduce((a,e) => {
+        let [k, ...v] = e.split(" ");
+        a[k.trim()] = v.join(" ").trim();
+        return a;
+      }, {});
+  }
+  return tables;
+}
 
 export default {
-
   colorGen() {
     let color = []
     color[0] = Math.random() * Math.floor(90) + Math.random() * Math.floor(180) + Math.random() * Math.floor(90);
@@ -13,16 +71,44 @@ export default {
     return `hsl(${color[0]}, ${color[1]}, ${color[2]})`
   },
 
+  
+
   parseKnex(str) {
+    // console.log({str})
+    let tables = testStuff(str);
+    let tableNames = Object.keys(tables);
+    let refs = testRef(str);
+    refs.map(r => {
+      if (r.tableName in tables) {
+        console.log('tbName', r);
+        tables[r.tableName][r.val] = r.ref
+      }
+    })
+    
+    // this.$set(this.tables, tables);
+    // this.$set(this.references, refs)
+    console.log("WESH", tables, "wsh")
+    this.tables = {...tables};
+    this.colors = Object.keys(tables).reduce((a,e)=>{
+      a[e] = this.colorGen()
+      return a;
+    },{})
+    this.references = [...refs];
+    this.tableNames = [...tableNames];
+    this.allTables = Object.assign({}, tables);
+    return;
     //TODO : better regex, also for .sql type
-    const regex = /CREATE TABLE `?(\w+)`? ?∆(.[^Ω]*)Ω/g;
-    const subRegex = /CONSTRAINT `?(\w+)`? FOREIGN KEY \([`]?(\w+)[`]?\) REFERENCES (.[^(]+)/g;
+    const regex = /CREATE TABLE (.*)\(/g;
+      const subRegex = /FOREIGN KEY (.*)/g
+    // const regex = /CREATE TABLE `?(\w+)`? ?∆(.[^Ω]*)Ω/g;
+    // const subRegex = /CONSTRAINT `?(\w+)`? FOREIGN KEY \([`]?(\w+)[`]?\) REFERENCES (.[^(]+)/g;
     let m, n;
     let i = 1;
     while ((m = regex.exec(str)) !== null) {
       if (m.index === regex.lastIndex) {
         regex.lastIndex++;
       }
+      console.log({m})
       let content = m[2].split(',').map(e => e.trim()).filter(e => !(e.startsWith('CONSTRAINT') || e.startsWith('KEY') || e.startsWith('PRIMARY')));
       let realContent = {};
       content.map((e, i) => {
@@ -51,7 +137,7 @@ export default {
         ] = ref
       }
     }
-    this.allTables = Object.assign({}, this.tables);
+    // this.allTables = Object.assign({}, this.tables);
   },
 
   read(data) {
@@ -82,7 +168,7 @@ export default {
     for (let i = 0, file; file = files[i]; i++) {
       let reader = new FileReader();
       reader.onload = e => {
-        this.text.push(e.target.result.replace(/\(\s/g, "∆").replace(/\)(;| E)/g, "Ω").replace(/\n|\r/g, ""));
+        this.text.push(e.target.result)
         this.parseKnex(this.text[i]);
       };
       reader.readAsText(file);
