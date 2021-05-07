@@ -59,11 +59,11 @@
 </template>
 
 <script>
-import Usage from './Usage';
-import Table from './Table';
-import SideMenu from './SideMenu';
+import Usage from './Usage.vue';
+import Table from './Table.vue';
+import SideMenu from './SideMenu.vue';
 import SpeedActions from './SpeedActions';
-import ReadAndParse from '@/utils/ReadAndParse.js';
+import ReadAndParse from '../utils/ReadAndParse.js';
 
 export default {
   name: 'HelloWorld',
