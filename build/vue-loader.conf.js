@@ -7,6 +7,9 @@ const sourceMapEnabled = isProduction
   : config.dev.cssSourceMap
 
 module.exports = {
+  publicPath: process.env.NODE_ENV === 'production'
+    ? '/sqlDbViewer/'
+    : '/',
   loaders: utils.cssLoaders({
     sourceMap: sourceMapEnabled,
     extract: isProduction
